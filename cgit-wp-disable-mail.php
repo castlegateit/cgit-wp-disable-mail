@@ -3,29 +3,56 @@
 /*
 
 Plugin Name: Castlegate IT WP Disable Mail
-Plugin URI: http://github.com/castlegateit/cgit-wp-disable-mail
+Plugin URI: https://github.com/castlegateit/cgit-wp-disable-mail
 Description: Disable email sent with the wp_mail function.
-Version: 1.0
+Version: 1.1
 Author: Castlegate IT
 Author URI: http://www.castlegateit.co.uk/
 License: MIT
 
 */
 
-$notice = '<b>Error:</b> %s cannot disable email. Please disable any other plugins that might send email.';
+if (function_exists('wp_mail')) {
+    // WordPress mail function is already defined? Show an error message that
+    // includes the path of the file that defines the function.
+    add_action('admin_notices', function () {
+        $title = get_plugin_data(__FILE__)['Title'] ?? basename(__FILE__);
+        $location = (new ReflectionFunction('wp_mail'))->getFileName();
 
-if (!function_exists('wp_mail')) {
-    $notice = '<b>Important:</b> %s is preventing this site from sending email.';
+        if (is_string($location) && substr($location, 0, strlen(ABSPATH)) === ABSPATH) {
+            $location = substr($location, strlen(ABSPATH));
+        }
 
+        include __DIR__ . '/views/not-disabled.php';
+    });
+} else {
+    // Replace the default WordPress mail function with a function that does not
+    // attempt to send email. If the relevant constant has been defined, log
+    // attempts to send mail to a file.
     function wp_mail($to, $subject, $message, $headers = '', $attachments = [])
     {
+        if (defined('CGIT_WP_DISABLE_MAIL_LOG')) {
+            // Assemble log data, including date and time
+            $data = array_merge([
+                'datetime' => date('Y-m-d H:i:s'),
+            ], compact('to', 'subject', 'message', 'headers'));
+
+            // Save data to log file
+            file_put_contents(
+                CGIT_WP_DISABLE_MAIL_LOG,
+                json_encode($data) . PHP_EOL,
+                FILE_APPEND
+            );
+        }
+
         return true;
     }
+
+    // Show a warning message on the dashboard, including the path of the log
+    // file if it has been defined.
+    add_action('admin_notices', function () {
+        $title = get_plugin_data(__FILE__)['Title'] ?? basename(__FILE__);
+
+        include __DIR__ . '/views/disabled.php';
+    });
 }
-
-add_action('admin_notices', function () use ($notice) {
-    $plugin = get_plugin_data(__FILE__);
-    $name = $plugin['Name'] ?? basename(__FILE__);
-
-    echo '<div class="notice error"><p>' . sprintf($notice, $name) . '</p></div>';
-});
