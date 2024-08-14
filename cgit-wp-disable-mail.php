@@ -1,22 +1,21 @@
 <?php
 
-/*
-
-Plugin Name: Castlegate IT WP Disable Mail
-Plugin URI: https://github.com/castlegateit/cgit-wp-disable-mail
-Description: Disable email sent with the wp_mail function.
-Version: 1.1
-Author: Castlegate IT
-Author URI: http://www.castlegateit.co.uk/
-License: MIT
-
-*/
+/**
+ * Plugin Name:  Castlegate IT WP Disable Mail
+ * Plugin URI:   https://github.com/castlegateit/cgit-wp-disable-mail
+ * Description:  Disable email sent via the wp_mail function.
+ * Version:      1.2.0
+ * Requires PHP: 8.2
+ * Author:       Castlegate IT
+ * Author URI:   https://www.castlegateit.co.uk/
+ * License:      MIT
+ * Update URI:   https://github.com/castlegateit/cgit-wp-disable-mail
+ */
 
 if (function_exists('wp_mail')) {
     // WordPress mail function is already defined? Show an error message that
     // includes the path of the file that defines the function.
     add_action('admin_notices', function () {
-        $title = get_plugin_data(__FILE__)['Title'] ?? basename(__FILE__);
         $location = (new ReflectionFunction('wp_mail'))->getFileName();
 
         if (is_string($location) && substr($location, 0, strlen(ABSPATH)) === ABSPATH) {
@@ -51,8 +50,6 @@ if (function_exists('wp_mail')) {
     // Show a warning message on the dashboard, including the path of the log
     // file if it has been defined.
     add_action('admin_notices', function () {
-        $title = get_plugin_data(__FILE__)['Title'] ?? basename(__FILE__);
-
         include __DIR__ . '/views/disabled.php';
     });
 }

@@ -1,13 +1,13 @@
 <?php
 
-$message = "$title cannot disable mail because <code>wp_mail</code> is already defined";
+$message = sprintf(__('Mail cannot be disabled because %s is already defined.'), '<code>wp_mail</code>');
 
 if ($location) {
-    $message .= " in <code>$location</code>";
+    $message = sprintf(__('Mail cannot be disabled because %s is already defined in %s.'), '<code>wp_mail</code>', '<code>' . $location . '</code>');
 }
-
-$message .= '.';
 
 ?>
 
-<div class="notice notice-error"><p><b>Error:</b> <?= wp_kses_post($message) ?></p></div>
+<div class="notice notice-error">
+    <p><b><?= esc_html__('Error:') ?></b> <?= wp_kses_post($message) ?></p>
+</div>
