@@ -2,7 +2,7 @@
 
 $message = sprintf(__('Mail cannot be disabled because %s is already defined.'), '<code>wp_mail</code>');
 
-if ($location) {
+if (isset($location) && $location) {
     $message = sprintf(__('Mail cannot be disabled because %s is already defined in %s.'), '<code>wp_mail</code>', '<code>' . $location . '</code>');
 }
 
